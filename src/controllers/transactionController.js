@@ -3,9 +3,7 @@ const Transaction = require("../models/Transaction");
 
 exports.createTransaction = async (req, res) => {
   try {
-    console.log('Received transaction data:', req.body);
-    console.log('User from token:', req.user);
-    
+        
     const requiredFields = ['title', 'amount', 'type', 'category'];
     const missingFields = requiredFields.filter(field => !req.body[field]);
 

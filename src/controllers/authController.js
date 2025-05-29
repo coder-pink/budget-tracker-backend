@@ -22,44 +22,7 @@ const generateTokens = (userId) => {
   return { accessToken, refreshToken };
 };
 
-// exports.registerUser = async (req, res) => {
-//   const errors = validationResult(req);
-//   if (!errors.isEmpty()) {
-//     return res.status(422).json({ errors: errors.array() });
-//   }
 
-//   try {
-//     const { name, email, password } = req.body;
-//     const userExists = await User.findOne({ email });
-//     if (userExists) return res.status(400).json({ message: "Email already in use" });
-
-//     const hashedPassword = await bcrypt.hash(password, 12);
-//     const newUser = new User({ name, email, password: hashedPassword });
-
-//     const savedUser = await newUser.save();
-//     const tokens = generateTokens(savedUser._id);
-//     savedUser.refreshToken = tokens.refreshToken;
-//     await savedUser.save();
-
-//     res.cookie("refreshToken", tokens.refreshToken, {
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === 'production',
-//       sameSite: 'strict',
-//       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-//     });
-
-//     res.status(201).json({
-//       userId: savedUser._id,
-//       accessToken: tokens.accessToken,
-//       user: {
-//         name: savedUser.name,
-//         email: savedUser.email
-//       }
-//     });
-//   } catch (err) {
-//     res.status(500).json({ message: err.message });
-//   }
-// };
 
 
 exports.registerUser = async (req, res) => {
@@ -72,14 +35,17 @@ exports.registerUser = async (req, res) => {
     const { name, email, password } = req.body;
 
     // Check if the user already exists by email
-    const userExists = await User.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase(); 
+    const userExists = await User.findOne({ email: normalizedEmail });
     if (userExists) return res.status(400).json({ message: "Email already in use" });
 
     // Hash the password before saving the user
-    const hashedPassword = await bcrypt.hash(password, 12);
-    const newUser = new User({ name, email, password: hashedPassword });
+    // const hashedPassword = await bcrypt.hash(password, 12);
+    // const newUser = new User({ name, email: normalizedEmail, password: hashedPassword });
 
+    const newUser = new User({ name, email: normalizedEmail, password });
     const savedUser = await newUser.save();
+    
 
     // Generate access and refresh tokens
     const tokens = generateTokens(savedUser._id);
@@ -119,7 +85,8 @@ exports.loginUser = async (req, res) => {
 
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email : normalizedEmail });
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
 
     const isMatch = await bcrypt.compare(password, user.password);
