@@ -16,7 +16,11 @@ router.get('/verify', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.userId).select('-password');
     if (!user) return res.status(404).json({ message: 'User not found' });
-    res.json(user);
+    res.status(200).json({
+      userId: user._id,
+      name: user.name,
+      email: user.email
+    });
   } catch (err) {
     console.error('Verification error:', err);
     res.status(500).json({ message: 'Server error' });
